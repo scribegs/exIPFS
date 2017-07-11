@@ -14,7 +14,7 @@ defmodule ExIPFS.Object do
   }
 
   @doc ~S"""
-  Creates a new object on IPFS. 
+  Creates a new object on IPFS.
 
   [API Docs](https://ipfs.io/docs/api/#api-v0-object-new)
 
@@ -39,7 +39,7 @@ defmodule ExIPFS.Object do
 
   [API Docs](https://ipfs.io/docs/api/#api-v0-object-new)
 
-  ## Example 
+  ## Example
 
       ExIPFS.Object.new!
 
@@ -73,7 +73,7 @@ defmodule ExIPFS.Object do
   """
   @spec get(String.t) :: {:ok, ExIPFS.Object.t} | {:error, String.t}
   def get(hash) do
-    resp = call("object/get?arg=" <> hash) 
+    resp = call("object/get?arg=" <> hash)
 
     case resp do
       %ExIPFS.Object{} ->
@@ -108,7 +108,6 @@ defmodule ExIPFS.Object do
     end
   end
 
-
   # def add_link(object, name, link, create \\ false) do
   #   call("object/patch/add-link?arg=#{object}&arg=#{name}&arg=#{link}&create=#{create}")
   # end
@@ -129,7 +128,7 @@ defmodule ExIPFS.Object do
       %{code: _, message: _} ->
         Map.merge(%ExIPFS.Error{}, resp)
 
-      resp -> 
+      resp ->
         Map.merge(%ExIPFS.Object{}, resp)
     end
   end

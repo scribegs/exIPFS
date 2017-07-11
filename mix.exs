@@ -33,7 +33,9 @@ defmodule ExIPFS.Mixfile do
 
      # Dev ====================================================================
      {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
-     {:ex_doc, "~> 0.14", only: :dev, runtime: false}
+     {:ex_doc, "~> 0.14", only: :dev, runtime: false},
+
+     {:credo, "~> 0.8", only: :dev, runtime: false}
     ]
   end
 end
