@@ -3,8 +3,6 @@ defmodule ExIPFS.Object do
   Defines interaction with IPFS Objects
   """
 
-  @ipfs_api Application.get_env(:ex_ipfs, :url)
-
   defstruct hash: nil, data: nil, links: []
 
   @type t :: %__MODULE__{
@@ -13,10 +11,11 @@ defmodule ExIPFS.Object do
     links: list(ScribeNode.IPFS.Object.t)
   }
 
+  alias ExIPFS.{Daemon}
+
   @doc ~S"""
   Creates a new object on IPFS.
-
-  [API Docs](https://ipfs.io/docs/api/#api-v0-object-new)
+  [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-new)
 
   ## Example
 
@@ -36,8 +35,7 @@ defmodule ExIPFS.Object do
 
   @doc ~S"""
   Same as new() except it returns just the result.
-
-  [API Docs](https://ipfs.io/docs/api/#api-v0-object-new)
+  [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-new)
 
   ## Example
 
@@ -52,12 +50,11 @@ defmodule ExIPFS.Object do
   """
   @spec new! :: [hash: String.t]
   def new! do
-    call("object/new")
+    Daemon.get("object/new")
   end
 
   @doc ~S"""
   Get object by hash
-
   [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-get)
 
   ## Example
@@ -73,7 +70,7 @@ defmodule ExIPFS.Object do
   """
   @spec get(String.t) :: {:ok, ExIPFS.Object.t} | {:error, String.t}
   def get(hash) do
-    resp = call("object/get?arg=" <> hash)
+    resp = Daemon.get("object/get?arg=" <> hash)
 
     case resp do
       %ExIPFS.Object{} ->
@@ -86,7 +83,6 @@ defmodule ExIPFS.Object do
 
   @doc ~S"""
   Get object by hash and return only the response
-
   [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-get)
 
   ## Example
@@ -108,33 +104,56 @@ defmodule ExIPFS.Object do
     end
   end
 
-  # def add_link(object, name, link, create \\ false) do
-  #   call("object/patch/add-link?arg=#{object}&arg=#{name}&arg=#{link}&create=#{create}")
-  # end
+  # Data =======================================================================
 
-  # ============================================================================
-  # PRIVATE ====================================================================
-  # ============================================================================
+  @doc ~S"""
+  Set the data field of an IPFS Object
+  [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-patch-set-data)
 
-  defp format_response(%{body: body} = _resp) do
-    resp = for {key, value} <- Poison.decode!(body), into: %{} do
-      key
-      |> String.downcase
-      |> String.to_atom
-      |> (& {&1, value}).()
-    end
+  ## Example
 
-    case resp do
-      %{code: _, message: _} ->
-        Map.merge(%ExIPFS.Error{}, resp)
+      ExIPFS.Object.set_data("QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n", "example/test.file")
 
-      resp ->
-        Map.merge(%ExIPFS.Object{}, resp)
-    end
+      QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n
+
+  """
+  @spec set_data(String.t, String.t) :: String.t
+  def set_data(hash, file) do
+    Daemon.patch("object/patch/set-data?arg=#{hash}", file)
   end
 
-  defp call(path) do
-    resp = HTTPoison.get!(@ipfs_api <> path)
-    format_response(resp)
+  # Links ======================================================================
+
+  @doc ~S"""
+  Add a link to a given object.
+  [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-patch-add-link)
+
+  ## Example
+
+      ExIPFS.Object.add_link("QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n",
+        "test", "QmVvapAWDbgBb3w1ujpGThQtiVmcMkFZLVkXEZp71pRVyX")
+
+      QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n
+
+  """
+  @spec add_link(String.t, String.t, String.t, boolean()) :: String.t
+  def add_link(object, name, link, create \\ false) do
+    Daemon.patch("object/patch/add-link?arg=#{object}&arg=#{name}&arg=#{link}&create=#{create}")
+  end
+
+  @doc ~S"""
+  Remove a link from an object
+  [IPFS Docs](https://ipfs.io/docs/api/#api-v0-object-patch-rm-link)
+
+  ## Example
+
+      ExIPFS.Object.remove_link("QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n", "test")
+
+      QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n
+
+  """
+  @spec remove_link(String.t, String.t) :: String.t
+  def remove_link(object, link_name) do
+    Daemon.patch("object/patch/rm-link?arg=#{object}&arg=#{link_name}}")
   end
 end

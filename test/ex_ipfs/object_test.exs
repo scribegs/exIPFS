@@ -5,7 +5,7 @@ defmodule ExIPFS.ObjectTest do
 
   describe "new/0" do
     test "it creates a new IPFS object" do
-      assert Object.new 
+      assert Object.new
     end
 
     test "it can be called with a !"  do
@@ -35,7 +35,7 @@ defmodule ExIPFS.ObjectTest do
     test "it fetches an object from IPFS" do
       %{hash: hash} = Object.new!
 
-      assert Object.get!(hash) == 
+      assert Object.get!(hash) ==
         %ExIPFS.Object{
           data: "",
           hash: hash,
@@ -52,15 +52,40 @@ defmodule ExIPFS.ObjectTest do
     end
   end
 
-  # describe "add_link_to_object" do
-  #   test "it adds a link to object" do
-  #     %{hash: base_object} = Object.new
-  #     %{hash: linked_object} = Object.new
-  #     %{hash: target} = Object.add_link(base_object, "test", linked_object)
-  #     %{links: [result]} = Object.get(target)
+  describe "set_data/2" do
+    test "it sets the data field of an IPFS object" do
+      %{hash: hash} = Object.new!
+      new_hash = Object.set_data(hash, file: "test/data/test.file")
 
-  #     assert Map.get(result, "Name") == "test"
-  #     assert Map.has_key?(result, "Hash")
-  #   end
-  # end
+      assert Object.get!(new_hash).data == "Test"
+    end
+  end
+
+  describe "add_link/4" do
+    test "it adds a link to a given object" do
+      %{hash: base} = Object.new!
+      %{hash: link} = Object.new!
+
+      %{links: [target]} = base
+        |> Object.add_link("test", link)
+        |> Object.get!()
+
+        assert target.name == "test"
+    end
+  end
+
+  describe "remove_link/2" do
+    @tag :focus
+    test "it removes a link from a given object" do
+      %{hash: base} = Object.new!
+      %{hash: link} = Object.new!
+
+      obj = base
+        |> Object.add_link("test", link)
+        |> Object.get!()
+        |> Map.get(:hash)
+        |> Object.remove_link("test")
+
+    end
+  end
 end
