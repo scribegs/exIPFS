@@ -80,12 +80,11 @@ defmodule ExIPFS.ObjectTest do
       %{hash: base} = Object.new!
       %{hash: link} = Object.new!
 
-      obj = base
+      base
         |> Object.add_link("test", link)
         |> Object.get!()
         |> Map.get(:hash)
         |> Object.remove_link("test")
-
     end
   end
 end
