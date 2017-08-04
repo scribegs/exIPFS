@@ -6,13 +6,15 @@ defmodule ExIPFS.Daemon do
     format_response(resp)
   end
 
-  def patch(path, params \\ []) do
-    resp = HTTPoison.patch!(@ipfs_api <> path, {:multipart, params})
+  def post(path, params \\ []) do
+    resp = HTTPoison.post!(@ipfs_api <> path, {:multipart, params})
 
     resp
     |> format_response()
     |> Map.get(:hash)
   end
+
+  def patch(path, params \\ []), do: post(path, params)
 
   # ============================================================================
   # PRIVATE ====================================================================
